@@ -14,7 +14,6 @@ public class Client implements Runnable {
     public BufferedReader socketIn;
     public PrintWriter socketOut;
 
-    private String host;
     private String username;
     private String password;
 
@@ -23,7 +22,7 @@ public class Client implements Runnable {
     }
 
     public boolean isAuthenticated() {
-        return authenticated && host != null && username != null && password != null;
+        return authenticated && username != null && password != null;
     }
 
     public Client() throws IOException {

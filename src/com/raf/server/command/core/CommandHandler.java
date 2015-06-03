@@ -1,6 +1,6 @@
 package com.raf.server.command.core;
 
-import com.raf.server.ServerThread;
+import com.raf.server.CommandListener;
 import com.raf.server.command.*;
 
 import java.util.Hashtable;
@@ -28,11 +28,11 @@ public class CommandHandler {
         return instance;
     }
 
-    public static void runCommand(ServerThread serverThread, String commandStr) {
+    public static void runCommand(CommandListener commandListener, String commandStr) {
         String commandName = commandStr.substring(0, commandStr.indexOf(" "));
         commandStr = commandStr.substring(commandStr.indexOf(" ") + 1);
 
         Command command = commands.get(commandName);
-        command.run(serverThread.user, commandStr, serverThread.userRepo, serverThread.sock, serverThread.sockOut);
+        command.run(commandListener.user, commandStr, commandListener.userRepo, commandListener.sock, commandListener.sockOut);
     }
 }

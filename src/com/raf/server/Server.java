@@ -20,9 +20,14 @@ public class Server {
 
         while(true) {
             Socket sock = serverSocket.accept();
-            ServerThread serverThread = new ServerThread(this, sock, userRepo, commandHandler);
-            Thread thread = new Thread(serverThread);
-            thread.start();
+
+            CommandListener commandListener = new CommandListener(this, sock, userRepo, commandHandler);
+            Thread listenerThread = new Thread(commandListener);
+            listenerThread.start();
+
+            ResponseDispatcher responseDispatcher = new ResponseDispatcher(this, sock, userRepo, commandHandler);
+            Thread dispatcherThread = new Thread(responseDispatcher);
+            dispatcherThread.start();
         }
     }
 

@@ -1,13 +1,14 @@
 package com.raf.server;
 
 import com.raf.server.command.core.CommandHandler;
+import com.raf.server.response.core.Response;
 import com.raf.server.user.User;
 import com.raf.server.user.repo.UserRepository;
 
 import java.io.*;
 import java.net.Socket;
 
-public class ServerThread implements Runnable {
+public class ResponseDispatcher implements Runnable {
 
     public User user;
 
@@ -20,7 +21,7 @@ public class ServerThread implements Runnable {
     public UserRepository userRepo;
     public CommandHandler commandHandler;
 
-    public ServerThread(Server server, Socket sock, UserRepository userRepo, CommandHandler commandHandler) {
+    public ResponseDispatcher(Server server, Socket sock, UserRepository userRepo, CommandHandler commandHandler) {
         this.server = server;
         this.sock = sock;
         this.userRepo = userRepo;
@@ -36,9 +37,13 @@ public class ServerThread implements Runnable {
             sockOut = new PrintWriter(new OutputStreamWriter(sock.getOutputStream()), true);
 
             while(true) {
-                String request = sockIn.readLine();
+                User currentUser = userRepo.userBySock(sock);
 
-                commandHandler.runCommand(this, request);
+                if(currentUser != null) {
+                    Response response = currentUser.getOldestQueuedResponse();
+                    if(response != null)
+                        sockOut.println(response.toString());
+                }
 //                break;
             }
 

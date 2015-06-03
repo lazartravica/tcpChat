@@ -35,6 +35,16 @@ public class UserRepository {
         return null;
     }
 
+    public static User userBySock(Socket sock) {
+        Set<String> usernames = users.keySet();
+        for(String username: usernames){
+            User user = users.get(username);
+            if(user.sock == sock)
+                return user;
+        }
+        return null;
+    }
+
     public static User createUser(Socket sock, String username, String password) {
         User user = new User(sock, username, password);
 
