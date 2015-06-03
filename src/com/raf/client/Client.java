@@ -1,5 +1,8 @@
 package com.raf.client;
 
+import com.raf.server.command.core.Command;
+import com.raf.server.response.core.Response;
+
 import java.io.*;
 import java.net.Socket;
 
@@ -14,8 +17,12 @@ public class Client implements Runnable {
     public BufferedReader socketIn;
     public PrintWriter socketOut;
 
+    public BufferedReader terminalIn;
+
     private String username;
     private String password;
+
+    private ResponseParser responseParser;
 
     public boolean isConnected() {
         return connected && socketIn != null && socketOut != null;
@@ -30,9 +37,12 @@ public class Client implements Runnable {
         authenticated = false;
 
         thread = new Thread(this);
+
+        terminalIn = new BufferedReader(new InputStreamReader(System.in));
+        responseParser = ResponseParser.getInstance();
     }
 
-    public synchronized void connect(String host, String username, String password) {
+    public synchronized void connect(String host) {
         try {
             sock = new Socket(host, 2015);
 
@@ -41,17 +51,18 @@ public class Client implements Runnable {
 
             connected = true;
 
-            socketOut.println("join " + username + ":" + password);
+            socketOut.println("join");
 
-            String response = socketIn.readLine();
+            Response response = responseParser.parse(socketIn.readLine());
 
-            System.out.println(response);
+            System.out.println(response.getMessage());
 
-            if(response.equals("OK")) {
-                authenticated = true;
-                this.username = username;
-                this.password = password;
+            if(response.getMessage().equals("Welcome!")) {
                 thread.start();
+
+                CommandDispatcher commandDispatcher = new CommandDispatcher(terminalIn, socketOut);
+                Thread dispatcherThread = new Thread(commandDispatcher);
+                dispatcherThread.start();
             }
 
         } catch (IOException e) {
@@ -83,23 +94,15 @@ public class Client implements Runnable {
     public static void main(String[] args) {
         try {
             Client client = new Client();
-            BufferedReader terminalIn = new BufferedReader(new InputStreamReader(System.in));
 
             while (true) {
-                if (!client.isConnected() || !client.isAuthenticated()) {
-                    System.out.println("Enter 'join [username]@[host_addr]' to join a server.");
+                if (!client.isConnected()) {
+                    System.out.println("Enter 'join [host]' to join a server.");
 
-                    String[] cmdParts = terminalIn.readLine().split("[\\s|@]");
+                    String[] cmdParts = client.terminalIn.readLine().split(" ");
 
-                    if(cmdParts.length == 3 && cmdParts[0].startsWith("join")) {
-                        String username = cmdParts[1];
-                        String host = cmdParts[2];
-
-                        System.out.println("Enter password: ");
-                        String password = terminalIn.readLine();
-
-                        client.connect(host, username, password);
-
+                    if(cmdParts.length == 2) {
+                        client.connect(cmdParts[1]);
                     } else {
                         System.out.println("Command not recognized.");
                     }
@@ -118,7 +121,7 @@ public class Client implements Runnable {
     public void run() {
         try {
             while (!Thread.interrupted()) {
-                if (!isConnected())
+                if (isConnected())
                     System.out.println(socketIn.readLine());
             }
         } catch (IOException e) {

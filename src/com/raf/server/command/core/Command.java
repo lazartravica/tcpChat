@@ -1,5 +1,6 @@
 package com.raf.server.command.core;
 
+import com.raf.server.CommandListener;
 import com.raf.server.user.User;
 import com.raf.server.user.repo.UserRepository;
 
@@ -8,5 +9,5 @@ import java.net.Socket;
 
 public interface Command {
 
-    public void run(User u, String commandStr, UserRepository userRepo, Socket sock, PrintWriter printWriter);
+    public void run(CommandListener commandListener, String commandStr);
 }

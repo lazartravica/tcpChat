@@ -38,7 +38,6 @@ public class ResponseDispatcher implements Runnable {
 
             while(true) {
                 User currentUser = userRepo.userBySock(sock);
-
                 if(currentUser != null) {
                     Response response = currentUser.getOldestQueuedResponse();
                     if(response != null)

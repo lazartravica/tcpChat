@@ -12,7 +12,9 @@ public class CommandHandler {
 
     private static Hashtable<String, Command> commands = new Hashtable<String, Command>() {{
         put("join", new JoinCommand());
-        put("quit", new QuitCommand());
+        put("register", new RegisterCommand());
+//        put("login", new LoginCommand());
+//        put("quit", new QuitCommand());
         put("pm", new PrivateMessageCommand());
         put("msg", new PublicMessageCommand());
         put("list", new ListCommand());
@@ -29,10 +31,17 @@ public class CommandHandler {
     }
 
     public static void runCommand(CommandListener commandListener, String commandStr) {
-        String commandName = commandStr.substring(0, commandStr.indexOf(" "));
-        commandStr = commandStr.substring(commandStr.indexOf(" ") + 1);
+        String commandName = "";
+
+        if(commandStr.indexOf(" ") != -1) {
+            commandName = commandStr.substring(0, commandStr.indexOf(" "));
+            commandStr = commandStr.substring(commandStr.indexOf(" ") + 1);
+        } else {
+            commandName = commandStr;
+            commandStr = null;
+        }
 
         Command command = commands.get(commandName);
-        command.run(commandListener.user, commandStr, commandListener.userRepo, commandListener.sock, commandListener.sockOut);
+        command.run(commandListener, commandStr);
     }
 }

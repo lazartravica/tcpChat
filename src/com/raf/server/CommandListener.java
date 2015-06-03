@@ -31,7 +31,6 @@ public class CommandListener implements Runnable {
     @Override
     public void run() {
         try {
-            System.out.println(sock.getInetAddress().getHostAddress());
             sockIn = new BufferedReader(new InputStreamReader(sock.getInputStream()));
             sockOut = new PrintWriter(new OutputStreamWriter(sock.getOutputStream()), true);
 
@@ -39,7 +38,6 @@ public class CommandListener implements Runnable {
                 String request = sockIn.readLine();
 
                 commandHandler.runCommand(this, request);
-//                break;
             }
 
 //            sock.close();
