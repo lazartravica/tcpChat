@@ -17,7 +17,7 @@ public class RegisterCommand implements Command {
         String[] cmdSegments = cmd.split(":");
 
         User user;
-        if((user = commandListener.userRepo.userByUsername(cmdSegments[0])) == null) {
+        if ((user = commandListener.userRepo.userByUsername(cmdSegments[0])) == null) {
             commandListener.userRepo.authenticateUser(commandListener.user, cmdSegments[0], cmdSegments[1]);
 
             commandListener.userRepo.createResponse(commandListener.user, new Response(Response.Status.OK, "Successfully registered."));

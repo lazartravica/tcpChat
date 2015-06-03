@@ -12,7 +12,7 @@ public class UserRepository {
 
     private static UserRepository instance = null;
 
-    private static Hashtable<String, User> users = new Hashtable<String, User>();
+    private static ArrayList<User> users = new ArrayList<User>();
 
     private static Integer guestCounter = 0;
 
@@ -28,7 +28,11 @@ public class UserRepository {
     }
 
     public static User userByUsername(String username) {
-        return users.get(username);
+        for(User user : users) {
+            if(user.username.equals(username))
+                return user;
+        }
+        return null;
     }
 
     public static User userByUsernameAndPassword(String username, String password) {
@@ -40,10 +44,8 @@ public class UserRepository {
     }
 
     public static User userBySock(Socket sock) {
-        Set<String> usernames = users.keySet();
-        for (String username : usernames) {
-            User user = users.get(username);
-            if (user.sock == sock)
+        for(User user : users) {
+            if(user.sock == sock)
                 return user;
         }
         return null;
@@ -52,7 +54,7 @@ public class UserRepository {
     public static User createUser(Socket sock, String username, String password) {
         User user = new User(sock, username, password);
 
-        users.put(username, user);
+        users.add(user);
         return user;
     }
 
@@ -65,27 +67,26 @@ public class UserRepository {
     }
 
     public static void createResponse(Response response) {
-        Set<String> usernames = users.keySet();
-        for (String username : usernames) {
-            users.get(username).queueResponse(response);
+        for(User user : users) {
+            user.queueResponse(response);
         }
     }
 
     public static Integer createNewGuestUser() {
-
         return users.size();
     }
 
-    public void authenticateUser(User user, String newUsername, String password) {
-        users.remove(user.username);
-        user.username = newUsername;
-        user.password = password;
-        user.isAuthenticated = true;
-
-        users.put(newUsername, user);
+    public void authenticateUser(User user, String username, String password) {
+        for(User listUser : users) {
+            if(listUser == user) {
+                listUser.username = user.username = username;
+                listUser.password = user.password = password;
+                listUser.isAuthenticated = user.isAuthenticated = true;
+            }
+        }
     }
 
     public ArrayList<User> usersList() {
-        return new ArrayList<User>(users.values());
+        return users;
     }
 }
