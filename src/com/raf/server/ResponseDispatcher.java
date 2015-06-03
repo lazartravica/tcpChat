@@ -37,16 +37,15 @@ public class ResponseDispatcher implements Runnable {
             sockOut = new PrintWriter(new OutputStreamWriter(sock.getOutputStream()), true);
 
             while(true) {
+                if(sock.isClosed())
+                    break;
                 User currentUser = userRepo.userBySock(sock);
                 if(currentUser != null) {
                     Response response = currentUser.getOldestQueuedResponse();
                     if(response != null)
                         sockOut.println(response.toString());
                 }
-//                break;
             }
-
-//            sock.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

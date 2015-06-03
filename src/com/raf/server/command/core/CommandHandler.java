@@ -3,6 +3,7 @@ package com.raf.server.command.core;
 import com.raf.server.CommandListener;
 import com.raf.server.command.*;
 
+import java.io.IOException;
 import java.util.Hashtable;
 
 public class CommandHandler {
@@ -13,8 +14,8 @@ public class CommandHandler {
     private static Hashtable<String, Command> commands = new Hashtable<String, Command>() {{
         put("join", new JoinCommand());
         put("register", new RegisterCommand());
-//        put("login", new LoginCommand());
-//        put("quit", new QuitCommand());
+        put("login", new LoginCommand());
+        put("quit", new QuitCommand());
         put("pm", new PrivateMessageCommand());
         put("msg", new PublicMessageCommand());
         put("list", new ListCommand());
@@ -30,7 +31,7 @@ public class CommandHandler {
         return instance;
     }
 
-    public static void runCommand(CommandListener commandListener, String commandStr) {
+    public static void runCommand(CommandListener commandListener, String commandStr) throws IOException {
         String commandName = "";
 
         if(commandStr.indexOf(" ") != -1) {
@@ -42,6 +43,8 @@ public class CommandHandler {
         }
 
         Command command = commands.get(commandName);
-        command.run(commandListener, commandStr);
+
+        if(command != null)
+            command.run(commandListener, commandStr);
     }
 }

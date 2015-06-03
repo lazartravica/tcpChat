@@ -38,9 +38,9 @@ public class CommandListener implements Runnable {
                 String request = sockIn.readLine();
 
                 commandHandler.runCommand(this, request);
+                if(sock.isClosed())
+                    break;
             }
-
-//            sock.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -86,6 +86,14 @@ public class UserRepository {
         }
     }
 
+    public synchronized void loginUser(User user, String username, String password) {
+        for(User listUser: users) {
+            if(listUser.username.equals(username))
+                users.remove(listUser);
+        }
+        authenticateUser(user, username, password);
+    }
+
     public ArrayList<User> usersList() {
         return users;
     }

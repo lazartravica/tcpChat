@@ -6,9 +6,7 @@ import com.raf.server.response.core.Response;
 import java.io.*;
 import java.net.Socket;
 
-public class Client implements Runnable {
-
-    private Thread thread;
+public class Client {
 
     private boolean authenticated;
     private boolean connected;
@@ -36,14 +34,13 @@ public class Client implements Runnable {
         connected = false;
         authenticated = false;
 
-        thread = new Thread(this);
-
         terminalIn = new BufferedReader(new InputStreamReader(System.in));
         responseParser = ResponseParser.getInstance();
     }
 
     public synchronized void connect(String host) {
         try {
+
             sock = new Socket(host, 2015);
 
             socketIn = new BufferedReader(new InputStreamReader(sock.getInputStream()));
@@ -58,11 +55,13 @@ public class Client implements Runnable {
             System.out.println(response.getMessage());
 
             if(response.getMessage().equals("Welcome!")) {
-                thread.start();
-
-                CommandDispatcher commandDispatcher = new CommandDispatcher(terminalIn, socketOut);
+                CommandDispatcher commandDispatcher = new CommandDispatcher(terminalIn, socketOut, sock);
                 Thread dispatcherThread = new Thread(commandDispatcher);
                 dispatcherThread.start();
+
+                ResponseListener responseListener = new ResponseListener(socketIn, sock);
+                Thread listenerThread = new Thread(responseListener);
+                listenerThread.start();
             }
 
         } catch (IOException e) {
@@ -86,30 +85,29 @@ public class Client implements Runnable {
         }
     }
 
-    public void terminate() {
-        disconnect();
-        thread.interrupt();
-    }
-
     public static void main(String[] args) {
         try {
             Client client = new Client();
 
             while (true) {
-                if (!client.isConnected()) {
+                if (client.sock == null || client.sock.isClosed()) {
                     System.out.println("Enter 'join [host]' to join a server.");
 
                     String[] cmdParts = client.terminalIn.readLine().split(" ");
 
-                    if(cmdParts.length == 2) {
+                    if(cmdParts.length == 2 && cmdParts[0].equals("join")) {
                         client.connect(cmdParts[1]);
                     } else {
                         System.out.println("Command not recognized.");
                     }
                 } else {
-                    String response = client.socketIn.readLine();
+                    if(client.sock.isOutputShutdown() || !client.sock.isBound()) {
+                        String response = client.socketIn.readLine();
 
-                    System.out.println(response);
+                        if(response != null)
+                            System.out.println(response);
+
+                    }
                 }
             }
         } catch (IOException e) {
@@ -117,15 +115,4 @@ public class Client implements Runnable {
         }
     }
 
-    @Override
-    public void run() {
-        try {
-            while (!Thread.interrupted()) {
-                if (isConnected())
-                    System.out.println(socketIn.readLine());
-            }
-        } catch (IOException e) {
-            System.out.println("Error catching message from server.");
-        }
-    }
 }

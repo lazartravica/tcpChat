@@ -14,9 +14,12 @@ public class CommandDispatcher implements Runnable {
     public BufferedReader terminalIn;
     public PrintWriter sockOut;
 
-    public CommandDispatcher(BufferedReader terminalIn, PrintWriter sockOut) {
+    private Socket sock;
+
+    public CommandDispatcher(BufferedReader terminalIn, PrintWriter sockOut, Socket sock) {
         this.terminalIn = terminalIn;
         this.sockOut = sockOut;
+        this.sock = sock;
     }
 
     @Override
@@ -26,7 +29,11 @@ public class CommandDispatcher implements Runnable {
                 String commandStr = terminalIn.readLine();
 
                 sockOut.println(commandStr);
+
+                if(commandStr.equals("quit"))
+                    break;
             }
+            sock.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

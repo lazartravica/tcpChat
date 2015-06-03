@@ -13,9 +13,11 @@ public class JoinCommand implements Command {
 
     @Override
     public void run(CommandListener commandListener, String cmd) {
-        commandListener.user = commandListener.userRepo.createGuestUser(commandListener.sock);
+        if(commandListener.userRepo.userBySock(commandListener.sock) == null) {
+            commandListener.user = commandListener.userRepo.createGuestUser(commandListener.sock);
 
-        commandListener.userRepo.createResponse(commandListener.user, new Response(Response.Status.OK, "Welcome!"));
-        commandListener.userRepo.createResponse(new Response(Response.Status.OK, "User " + commandListener.user.username + " has joined the chatroom."));
+            commandListener.userRepo.createResponse(commandListener.user, new Response(Response.Status.OK, "Welcome!"));
+            commandListener.userRepo.createResponse(new Response(Response.Status.OK, "User " + commandListener.user.username + " has joined the chatroom."));
+        }
     }
 }
